@@ -1,0 +1,22 @@
+[project]
+name = "blog-api"
+version = "0.1.0"
+description = "A personal blog backend API built with FastAPI and PostgreSQL"
+
+[tool.uv.dependencies]
+fastapi = "*"
+uvicorn = "*"
+sqlalchemy = "*"
+psycopg2-binary = "*"
+pydantic = "*"
+pydantic-settings = "*"
+python-jose = { extras = ["cryptography"], version = "*" }
+python-multipart = "*"
+passlib = { extras = ["bcrypt"], version = "*" }
+alembic = "*"
+python-dotenv = "*"
+redis = "*"
+
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
