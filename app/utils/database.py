@@ -7,8 +7,13 @@ import os
 # 加载环境变量
 load_dotenv()
 
-# 获取数据库URL
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:password@localhost:5432/example_db")
+# 获取数据库配置
+POSTGRES_USER = os.getenv("POSTGRES_USER")
+POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+POSTGRES_DB = os.getenv("POSTGRES_DB")
+
+# 构建数据库URL
+DATABASE_URL = f"postgresql://{POSTGRES_USER}:{POSTGRES_PASSWORD}@localhost:5432/{POSTGRES_DB}"
 
 # 创建数据库引擎
 engine = create_engine(DATABASE_URL)

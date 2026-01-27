@@ -1,15 +1,14 @@
-FROM python:3.9-slim
+FROM python:3.12-slim-bookworm
 
 WORKDIR /app
+
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
     gcc \
     libpq-dev \
     && rm -rf /var/lib/apt/lists/*
-
-# Install UV
-RUN pip install --no-cache-dir uv
 
 # Copy project files
 COPY pyproject.toml .
@@ -18,7 +17,7 @@ COPY main.py .
 COPY app/ app/
 
 # Install dependencies
-RUN uv sync
+RUN uv sync --frozen
 
 # Expose port
 EXPOSE 8000

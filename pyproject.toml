@@ -1,22 +1,18 @@
 [project]
-name = "blog-api"
+name = "blog"
 version = "0.1.0"
-description = "A personal blog backend API built with FastAPI and PostgreSQL"
-
-[tool.uv.dependencies]
-fastapi = "*"
-uvicorn = "*"
-sqlalchemy = "*"
-psycopg2-binary = "*"
-pydantic = "*"
-pydantic-settings = "*"
-python-jose = { extras = ["cryptography"], version = "*" }
-python-multipart = "*"
-passlib = { extras = ["bcrypt"], version = "*" }
-alembic = "*"
-python-dotenv = "*"
-redis = "*"
-
-[build-system]
-requires = ["setuptools", "wheel"]
-build-backend = "setuptools.build_meta"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "python-dotenv>=1.0.0",
+    "fastapi>=0.128.0",
+    "python-jose[cryptography]>=3.3.0",
+    "passlib[bcrypt]>=1.7.4",
+    "psycopg2-binary>=2.9.11",
+    "sqlalchemy>=2.0.46",
+    "uvicorn>=0.40.0",
+    "pydantic[email]>=2.12.5",
+    "python-multipart>=0.0.22",
+    "redis>=7.1.0",
+]
