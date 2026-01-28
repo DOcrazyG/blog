@@ -2,9 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 from app.utils.database import get_db
-from app.utils.auth import get_current_active_user, get_current_admin_user
+from app.utils.auth import get_current_active_user, get_current_admin_user, get_current_user_optional
 from app.utils.redis import RedisCache, CacheKeys
 from app.models.user import User
 from app.models.post import Post
@@ -33,7 +33,7 @@ def create_post(post: PostCreate, db: Session = Depends(get_db), current_user: U
 
     # 如果发布，设置发布时间
     if post.is_published:
-        db_post.published_at = datetime.utcnow()
+        db_post.published_at = datetime.now(timezone.utc)
 
     db.add(db_post)
     db.commit()
@@ -143,7 +143,7 @@ def get_my_posts(
 
 @router.get("/{post_id}", response_model=PostSchema)
 def get_post(
-    post_id: int, db: Session = Depends(get_db), current_user: Optional[User] = Depends(get_current_active_user)
+    post_id: int, db: Session = Depends(get_db), current_user: Optional[User] = Depends(get_current_user_optional)
 ):
     """获取指定文章"""
     # 生成缓存键
@@ -160,8 +160,10 @@ def get_post(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Post not found")
 
     # 检查权限：如果文章未发布，只有作者可以查看
-    if not post.is_published and post.author_id != current_user.id:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
+    if not post.is_published:
+        # 如果文章未发布，需要验证用户身份
+        if not current_user or post.author_id != current_user.id:
+            raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not enough permissions")
 
     # 将结果转换为可序列化的格式
     post_data = {
@@ -228,7 +230,7 @@ def update_post(
         post.is_published = post_update.is_published
         # 如果从未发布过，现在发布，设置发布时间
         if post.is_published and not post.published_at:
-            post.published_at = datetime.utcnow()
+            post.published_at = datetime.now(timezone.utc)
 
     # 更新标签
     if post_update.tag_ids is not None:

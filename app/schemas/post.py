@@ -1,8 +1,9 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import Optional, List
 from app.schemas.user import User
 from app.schemas.tag import Tag
+
 
 class PostBase(BaseModel):
     title: str = Field(..., min_length=1, max_length=255)
@@ -11,8 +12,10 @@ class PostBase(BaseModel):
     is_published: bool = False
     tag_ids: Optional[List[int]] = []
 
+
 class PostCreate(PostBase):
     pass
+
 
 class PostUpdate(BaseModel):
     title: Optional[str] = Field(None, min_length=1, max_length=255)
@@ -21,6 +24,7 @@ class PostUpdate(BaseModel):
     is_published: Optional[bool] = None
     tag_ids: Optional[List[int]] = []
 
+
 class PostInDB(PostBase):
     id: int
     author_id: int
@@ -28,8 +32,8 @@ class PostInDB(PostBase):
     updated_at: Optional[datetime] = None
     published_at: Optional[datetime] = None
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
+
 
 class Post(PostInDB):
     author: User

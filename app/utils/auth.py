@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Optional
 from jose import JWTError, jwt
 from pwdlib import PasswordHash
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, status, Request
 from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from dotenv import load_dotenv
@@ -23,6 +23,18 @@ pwd_hash = PasswordHash.recommended()
 
 # OAuth2密码承载令牌
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login")
+
+
+# 可选的令牌提取依赖
+def get_token_optional(request: Request) -> Optional[str]:
+    """从请求头中提取令牌（可选）"""
+    authorization: str = request.headers.get("Authorization")
+    if not authorization:
+        return None
+    scheme, _, param = authorization.partition(" ")
+    if scheme.lower() != "bearer":
+        return None
+    return param
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -81,3 +93,24 @@ async def get_current_admin_user(current_user: User = Depends(get_current_user))
     if not current_user.is_admin:
         raise HTTPException(status_code=403, detail="Not enough permissions")
     return current_user
+
+
+def get_current_user_optional(
+    token: Optional[str] = Depends(get_token_optional), db: Session = Depends(get_db)
+) -> Optional[User]:
+    """获取当前用户（可选）"""
+    if not token:
+        return None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            return None
+        user = db.query(User).filter(User.username == username).first()
+        if user is None:
+            return None
+        if not user.is_active:
+            return None
+        return user
+    except JWTError:
+        return None
